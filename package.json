@@ -9,6 +9,8 @@
     "lint": "eslint",
     "server": "ts-node server/index.ts",
     "server:dev": "nodemon server/index.ts",
+    "server:build": "tsc -p server/tsconfig.json",
+    "server:prod": "node server/dist/index.js",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:seed": "ts-node prisma/seed.ts",

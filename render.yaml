@@ -3,8 +3,8 @@ services:
     name: youtube-api-backend
     env: node
     plan: free
-    buildCommand: npm install && npm run db:generate
-    startCommand: npm run server
+    buildCommand: npm install && npm run db:generate && npm run server:build
+    startCommand: npm run server:prod
     envVars:
       - key: NODE_ENV
         value: production
