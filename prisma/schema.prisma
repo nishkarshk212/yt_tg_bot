@@ -1,0 +1,125 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  password      String
+  name          String?
+  role          UserRole  @default(USER)
+  isActive      Boolean   @default(true)
+  emailVerified Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  apiKeys       ApiKey[]
+  subscriptions Subscription[]
+  usageLogs     UsageLog[]
+}
+
+model ApiKey {
+  id          String   @id @default(uuid())
+  key         String   @unique
+  name        String
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  isActive    Boolean  @default(true)
+  rateLimit   Int      @default(100)
+  lastUsedAt  DateTime?
+  expiresAt   DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([userId])
+}
+
+model Subscription {
+  id              String           @id @default(uuid())
+  userId          String
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  planId          String
+  plan            Plan             @relation(fields: [planId], references: [id])
+  status          SubscriptionStatus @default(ACTIVE)
+  startDate       DateTime         @default(now())
+  endDate         DateTime?
+  stripeCustomerId String?
+  stripeSubscriptionId String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  
+  @@index([userId])
+  @@index([planId])
+}
+
+model Plan {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String
+  price       Decimal  @db.Decimal(10, 2)
+  currency    String   @default("USD")
+  requestsPerMonth Int
+  rateLimit   Int
+  features    Json
+  isActive    Boolean  @default(true)
+  stripePriceId String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  subscriptions Subscription[]
+}
+
+model UsageLog {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  apiKeyId    String?
+  endpoint    String
+  method      String
+  statusCode  Int
+  responseTime Int
+  timestamp   DateTime @default(now())
+  ipAddress   String?
+  
+  @@index([userId])
+  @@index([timestamp])
+}
+
+model RateLimit {
+  id          String   @id @default(uuid())
+  apiKey      String   @unique
+  requests    Int      @default(0)
+  windowStart DateTime @default(now())
+  windowEnd   DateTime
+}
+
+model AdminSettings {
+  id              String   @id @default(uuid())
+  maintenanceMode Boolean  @default(false)
+  maxFreeRequests Int      @default(100)
+  registrationOpen Boolean @default(true)
+  announcement    String?
+  updatedAt       DateTime @updatedAt
+}
+
+enum UserRole {
+  USER
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELLED
+  EXPIRED
+  PENDING
+}
