@@ -11,6 +11,9 @@ export interface AuthRequest extends Request {
     role: string;
   };
   apiKey?: string;
+  query: any;
+  params: any;
+  body: any;
 }
 
 export const authenticateToken = async (
