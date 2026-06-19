@@ -136,8 +136,6 @@ export const authenticateApiKey = async (
   }
 };
 
-export { getPrismaClient };
-
 export const requireAdmin = (
   req: AuthRequest,
   res: Response,
