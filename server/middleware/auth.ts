@@ -1,8 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { getPrismaClient } from '../lib/prisma';
 
 export interface AuthRequest extends Request {
   user?: {
@@ -41,6 +39,7 @@ export const authenticateToken = async (
       role: string;
     };
 
+    const prisma = getPrismaClient();
     const user = await prisma.user.findUnique({
       where: { id: decoded.id },
     });
@@ -88,6 +87,7 @@ export const authenticateApiKey = async (
   }
 
   try {
+    const prisma = getPrismaClient();
     const keyRecord = await prisma.apiKey.findUnique({
       where: { key: apiKey },
       include: { user: true },
@@ -136,6 +136,8 @@ export const authenticateApiKey = async (
   }
 };
 
+export { getPrismaClient };
+
 export const requireAdmin = (
   req: AuthRequest,
   res: Response,
@@ -151,3 +153,5 @@ export const requireAdmin = (
   }
   next();
 };
+
+export { getPrismaClient };
